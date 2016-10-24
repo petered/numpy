@@ -114,6 +114,7 @@ from ._globals import _NoValue
 
 # We first need to detect if we're being called as part of the numpy setup
 # procedure itself in a reliable manner.
+
 try:
     __NUMPY_SETUP__
 except NameError:
@@ -197,3 +198,15 @@ else:
     # but do not use them, we define them here for backward compatibility.
     oldnumeric = 'removed'
     numarray = 'removed'
+
+
+# The patch below allows you to call all numpy functions as methods.  
+
+import numpy._forbidden_fruit.curse 
+import types
+excluded_list = {'arange', 'zeros', 'ones', 'array'}
+for numpy_function_name in dir(np):
+    potential_function = getattr(np, numpy_function_name)
+    if numpy_function_name.lower()==numpy_function_name and hasattr(potential_function, '__call__') \
+            and not hasattr(np.ndarray, numpy_function_name) and numpy_function_name not in excluded_list:
+        numpy._forbidden_fruit.curse(np.ndarray, numpy_function_name, types.MethodType(getattr(np, numpy_function_name), None, np.ndarray))
